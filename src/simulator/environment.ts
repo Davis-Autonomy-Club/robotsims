@@ -1,4 +1,4 @@
-import { EquirectangularReflectionMapping, RepeatWrapping, Scene, SRGBColorSpace, TextureLoader, type AmbientLight, type Mesh, type MeshStandardMaterial } from 'three';
+import { EquirectangularReflectionMapping, RepeatWrapping, Scene, SRGBColorSpace, Texture, TextureLoader, type AmbientLight, type Mesh, type MeshStandardMaterial } from 'three';
 
 export type EnvironmentId = 'forest' | 'mars' | 'warehouse' | 'lab';
 
@@ -28,14 +28,29 @@ export class EnvironmentManager {
 
   async setEnvironment(id: EnvironmentId): Promise<void> {
     const config = ENVIRONMENT_CONFIG[id];
-    const texture = await this.textureLoader.loadAsync(config.texture);
-    texture.colorSpace = SRGBColorSpace;
-    texture.mapping = EquirectangularReflectionMapping;
-    texture.wrapS = RepeatWrapping;
-    texture.wrapT = RepeatWrapping;
-    texture.repeat.set(4, 4);
-    this.scene.background = texture;
-    this.groundMaterial.map = texture;
+
+    // Background texture — equirectangular
+    const bgTexture = await this.textureLoader.loadAsync(config.texture);
+    bgTexture.colorSpace = SRGBColorSpace;
+    bgTexture.mapping = EquirectangularReflectionMapping;
+
+    // Ground texture — tiled UV
+    const groundTexture = await this.textureLoader.loadAsync(config.texture);
+    groundTexture.colorSpace = SRGBColorSpace;
+    groundTexture.wrapS = RepeatWrapping;
+    groundTexture.wrapT = RepeatWrapping;
+    groundTexture.repeat.set(4, 4);
+
+    // Dispose previous textures to avoid GPU leak
+    if (this.scene.background instanceof Texture) {
+      this.scene.background.dispose();
+    }
+    if (this.groundMaterial.map) {
+      this.groundMaterial.map.dispose();
+    }
+
+    this.scene.background = bgTexture;
+    this.groundMaterial.map = groundTexture;
     this.groundMaterial.needsUpdate = true;
     this.ambient.color.set(config.ambient);
     this.active = id;

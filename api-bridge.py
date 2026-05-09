@@ -94,6 +94,12 @@ async def send_to_browser(payload: dict) -> bool:
 class ApiHandler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
 
+    def do_OPTIONS(self) -> None:
+        self.send_response(HTTPStatus.NO_CONTENT)
+        self._add_cors_headers()
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
     def do_POST(self) -> None:
         parsed = urlparse(self.path)
         if parsed.path != "/action":
@@ -165,6 +171,7 @@ class ApiHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", "text/event-stream")
         self.send_header("Cache-Control", "no-cache")
         self.send_header("Connection", "keep-alive")
+        self._add_cors_headers()
         self.end_headers()
 
         try:
@@ -187,11 +194,17 @@ class ApiHandler(BaseHTTPRequestHandler):
             if not frame_subscribers and loop is not None:
                 asyncio.run_coroutine_threadsafe(send_to_browser({"type": "set_frame_stream", "fps": 0}), loop)
 
+    def _add_cors_headers(self) -> None:
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+
     def _send_json(self, status: HTTPStatus, payload: dict) -> None:
         data = json.dumps(payload).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(data)))
+        self._add_cors_headers()
         self.end_headers()
         self.wfile.write(data)
 

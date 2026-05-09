@@ -40,5 +40,5 @@ export const LEKIWI_CONFIG: RobotConfig = {
   packagesPath: '/models/lekiwi/',
   joints: [...ARM_JOINTS],
   actionTokens: { ...ARM_ACTIONS, ...BASE_ACTIONS },
-  wristLinkCandidates: ['Wrist-Camera-Mount-v11', 'Wrist_Roll_08c-v1', 'Moving_Jaw_08d-v1'],
+  wristLinkCandidates: ['Wrist_Roll_Pitch_08i-v1', 'Wrist_Roll_08c-v1', 'Wrist-Camera-Mount-v11', 'Moving_Jaw_08d-v1'],
 };
