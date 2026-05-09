@@ -46,6 +46,12 @@ body {
   left: 12px;
 }
 
+#api-test-panel {
+  top: 230px;
+  left: 12px;
+  min-width: 240px;
+}
+
 #right-panel {
   top: 12px;
   right: 12px;
@@ -105,6 +111,42 @@ button:hover {
 
 .telemetry-value {
   color: #999;
+}
+
+.api-test-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.api-test-row label {
+  color: #999;
+  min-width: 56px;
+}
+
+#api-action-select {
+  flex: 1;
+  border: 1px solid #444;
+  background: #121212;
+  color: #ddd;
+  font: inherit;
+  padding: 4px;
+}
+
+#api-magnitude {
+  width: 120px;
+}
+
+#api-magnitude-value {
+  color: #bbb;
+  min-width: 34px;
+  text-align: right;
+}
+
+#api-test-status {
+  color: #9ad0ff;
+  margin-top: 2px;
 }
 
 #wrist-panel {

@@ -7,6 +7,10 @@ RobotSim includes:
 - A local **bridge service** (`api-bridge.py`) exposing simple HTTP endpoints to external scripts
 - Real-time action forwarding, telemetry updates, and SSE image streaming
 
+Docs for participants:
+- `HACKATHON.md` for quick API usage
+- `UNDERSTANDING_GUIDE.md` for architecture, action-token concepts, and extension points
+
 ---
 
 ## What This Repo Does

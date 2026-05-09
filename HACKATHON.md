@@ -1,5 +1,7 @@
 # RobotSim - Hacker API
 
+Need the deeper architecture/action-token walkthrough? Start with `UNDERSTANDING_GUIDE.md`.
+
 ## Quick Start
 1. `pip install websockets`
 2. Terminal 1: `npm run dev`

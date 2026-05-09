@@ -91,7 +91,7 @@ export class RobotViewer {
     this.scene.add(loaded);
 
     this.applyRobotMaterial(loaded);
-    this.fitRobotToGround(loaded);
+    this.fitRobotWhenReady(loaded);
     this.resetJointState();
     this.attachWristCamera();
   }
@@ -209,9 +209,30 @@ export class RobotViewer {
     });
   }
 
-  private fitRobotToGround(root: Object3D): void {
+  private fitRobotWhenReady(root: Object3D): void {
+    let attempts = 0;
+    const maxAttempts = 120;
+    const tick = () => {
+      // Mesh resources can arrive after URDF parse completes.
+      // Retry until at least one renderable mesh exists.
+      this.applyRobotMaterial(root);
+      const didFit = this.fitRobotToGround(root);
+      attempts += 1;
+      if (!didFit && attempts < maxAttempts) {
+        requestAnimationFrame(tick);
+      }
+    };
+    tick();
+  }
+
+  private fitRobotToGround(root: Object3D): boolean {
+    // URDF assets are authored in ROS's Z-up convention; rotate to Three.js Y-up.
+    root.rotation.set(-Math.PI / 2, 0, 0);
     root.updateMatrixWorld(true);
     const box = new Box3().setFromObject(root);
+    if (box.isEmpty()) {
+      return false;
+    }
     const size = new Vector3();
     box.getSize(size);
     const targetHeight = 0.5;
@@ -222,8 +243,8 @@ export class RobotViewer {
     root.position.y -= adjusted.min.y;
     root.position.x = 0;
     root.position.z = 0;
-    root.rotation.set(0, 0, 0);
     this.basePose = { x: 0, y: 0, theta: 0 };
+    return true;
   }
 
   private attachWristCamera(): void {

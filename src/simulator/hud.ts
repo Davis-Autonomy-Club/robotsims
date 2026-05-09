@@ -16,6 +16,12 @@ interface HudElements {
   objectCount: HTMLElement;
   fps: HTMLElement;
   wristCanvas: HTMLCanvasElement;
+  apiActionSelect: HTMLSelectElement;
+  apiMagnitude: HTMLInputElement;
+  apiMagnitudeValue: HTMLElement;
+  apiSendAction: HTMLButtonElement;
+  apiQuickActions: HTMLElement;
+  apiTestStatus: HTMLElement;
 }
 
 export class Hud {
@@ -46,6 +52,16 @@ export class Hud {
       objectCount: this.byId('object-count'),
       fps: this.byId('fps-counter'),
       wristCanvas: this.byId<HTMLCanvasElement>('wrist-cam'),
+      apiActionSelect: this.byId<HTMLSelectElement>('api-action-select'),
+      apiMagnitude: this.byId<HTMLInputElement>('api-magnitude'),
+      apiMagnitudeValue: this.byId('api-magnitude-value'),
+      apiSendAction: this.byId<HTMLButtonElement>('api-send-action'),
+      apiQuickActions: this.byId('api-quick-actions'),
+      apiTestStatus: this.byId('api-test-status'),
+    };
+
+    this.elements.apiMagnitude.oninput = () => {
+      this.elements.apiMagnitudeValue.textContent = Number(this.elements.apiMagnitude.value).toFixed(2);
     };
   }
 
@@ -69,6 +85,14 @@ export class Hud {
 
   onClearObjects(callback: () => void): void {
     this.elements.clearButton.onclick = callback;
+  }
+
+  onApiAction(callback: (actionToken: string, magnitude: number) => void): void {
+    this.elements.apiSendAction.onclick = () => {
+      const token = this.elements.apiActionSelect.value;
+      const magnitude = Number(this.elements.apiMagnitude.value);
+      callback(token, magnitude);
+    };
   }
 
   setActiveRobot(robotId: RobotId): void {
@@ -105,6 +129,33 @@ export class Hud {
 
   updateFps(fps: number): void {
     this.elements.fps.textContent = `${fps.toFixed(1)} FPS`;
+  }
+
+  setApiActionOptions(tokens: string[], quickActions: string[]): void {
+    this.elements.apiActionSelect.innerHTML = '';
+    tokens.forEach((token) => {
+      const option = document.createElement('option');
+      option.value = token;
+      option.textContent = token;
+      this.elements.apiActionSelect.append(option);
+    });
+
+    this.elements.apiQuickActions.innerHTML = '';
+    quickActions.forEach((token) => {
+      const button = document.createElement('button');
+      button.textContent = token;
+      button.onclick = () => {
+        const magnitude = Number(this.elements.apiMagnitude.value);
+        this.elements.apiActionSelect.value = token;
+        this.elements.apiSendAction.click();
+        this.setApiTestStatus(`Sent ${token} (${magnitude.toFixed(2)})`);
+      };
+      this.elements.apiQuickActions.append(button);
+    });
+  }
+
+  setApiTestStatus(message: string): void {
+    this.elements.apiTestStatus.textContent = message;
   }
 
   getWristCanvas(): HTMLCanvasElement {

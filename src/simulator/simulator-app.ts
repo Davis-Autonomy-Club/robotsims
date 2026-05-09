@@ -40,6 +40,7 @@ export class SimulatorApp {
     await this.robotViewer.switchRobot('so101');
     await this.environment.setEnvironment('forest');
     this.hud.setActiveRobot('so101');
+    this.configureApiTestPanel('so101');
     this.hud.setActiveEnvironment('forest');
     this.hud.setBridgeConnected(false);
 
@@ -59,6 +60,14 @@ export class SimulatorApp {
     this.hud.onEnvironmentSwitch((environmentId) => this.switchEnvironment(environmentId));
     this.hud.onSpawnObject((type) => this.objectSpawner.spawnObject(type));
     this.hud.onClearObjects(() => this.objectSpawner.clearObjects());
+    this.hud.onApiAction((token, magnitude) => {
+      const accepted = this.startAction(token, magnitude);
+      this.hud.setApiTestStatus(
+        accepted
+          ? `Sent ${token} (${Math.max(0, Math.min(1, magnitude)).toFixed(2)})`
+          : `Rejected: ${token} is not valid for ${this.robotViewer.currentRobotId}`,
+      );
+    });
   }
 
   private async switchRobot(robotId: RobotId): Promise<void> {
@@ -66,6 +75,7 @@ export class SimulatorApp {
     this.activeAction = null;
     this.taskStatus = 'idle';
     this.hud.setActiveRobot(robotId);
+    this.configureApiTestPanel(robotId);
   }
 
   private async switchEnvironment(environmentId: EnvironmentId): Promise<void> {
@@ -73,12 +83,12 @@ export class SimulatorApp {
     this.hud.setActiveEnvironment(environmentId);
   }
 
-  private startAction(token: string, magnitude: number): void {
+  private startAction(token: string, magnitude: number): boolean {
     const clampedMagnitude = Math.max(0, Math.min(1, magnitude));
     const config = this.robotViewer.currentRobotId === 'lekiwi' ? LEKIWI_CONFIG : SO101_CONFIG;
     const spec = config.actionTokens[token];
     if (!spec) {
-      return;
+      return false;
     }
 
     this.lastAction = { token, magnitude: clampedMagnitude, timestamp: Date.now() };
@@ -94,16 +104,17 @@ export class SimulatorApp {
     if (spec.kind === 'joint_set' && spec.jointKey && spec.target) {
       this.robotViewer.setJointToBound(spec.jointKey, spec.target);
       this.taskStatus = 'complete';
-      return;
+      return true;
     }
 
     if (spec.kind === 'reset') {
       this.robotViewer.resetJointState();
       this.taskStatus = 'complete';
-      return;
+      return true;
     }
 
     this.taskStatus = 'in_progress';
+    return true;
   }
 
   private updateAction(deltaSeconds: number): void {
@@ -185,6 +196,20 @@ export class SimulatorApp {
       objects: this.objectSpawner.getObjectStates(),
       timestamp: Date.now(),
     };
+  }
+
+  private configureApiTestPanel(robotId: RobotId): void {
+    const config = robotId === 'lekiwi' ? LEKIWI_CONFIG : SO101_CONFIG;
+    const allTokens = Object.keys(config.actionTokens);
+    const quickActions =
+      robotId === 'lekiwi'
+        ? ['drive_forward', 'rotate_left', 'shoulder_up', 'wrist_roll_cw', 'grip', 'reset']
+        : ['rotate_cw', 'shoulder_up', 'elbow_down', 'wrist_roll_cw', 'grip', 'reset'];
+    this.hud.setApiActionOptions(
+      allTokens,
+      quickActions.filter((token) => token in config.actionTokens),
+    );
+    this.hud.setApiTestStatus(`Ready for ${robotId.toUpperCase()} actions`);
   }
 
   private requireElement(id: string): HTMLElement {
