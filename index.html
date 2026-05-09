@@ -4,10 +4,56 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dac-robosim</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+    <title>RobotSim</title>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <div id="sim-root"></div>
+      <div id="hud">
+        <div id="left-panel" class="panel">
+          <p class="section-title">ROBOT</p>
+          <div class="button-row">
+            <button id="robot-so101" class="active">SO101</button>
+            <button id="robot-lekiwi">LeKiwi</button>
+          </div>
+
+          <p class="section-title">ENVIRONMENT</p>
+          <div class="button-row">
+            <button id="env-forest" class="active">Forest</button>
+            <button id="env-mars">Mars</button>
+            <button id="env-warehouse">Warehouse</button>
+            <button id="env-lab">Lab</button>
+          </div>
+
+          <p class="section-title">OBJECTS</p>
+          <div class="button-row">
+            <button id="spawn-cube">+ Cube</button>
+            <button id="spawn-sphere">+ Sphere</button>
+            <button id="spawn-cylinder">+ Cylinder</button>
+            <button id="spawn-clear">Clear</button>
+          </div>
+
+          <div id="bridge-status">○ BRIDGE DISCONNECTED</div>
+        </div>
+
+        <div id="right-panel" class="panel">
+          <p class="section-title">JOINTS (DEG)</p>
+          <div id="joint-readout"></div>
+          <div class="telemetry-line">LAST ACTION: <span id="last-action" class="telemetry-value">none</span></div>
+          <div class="telemetry-line">TASK: <span id="task-status" class="telemetry-value">IDLE</span></div>
+          <div class="telemetry-line">OBJECTS: <span id="object-count" class="telemetry-value">0 objects</span></div>
+        </div>
+
+        <div id="wrist-panel">
+          <div class="section-title">WRIST CAM</div>
+          <canvas id="wrist-cam" width="256" height="256"></canvas>
+          <div id="fps-counter">0.0 FPS</div>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
